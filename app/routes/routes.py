@@ -1,4 +1,3 @@
-import logging
 from datetime import timedelta
 
 from fastapi import APIRouter, HTTPException, Depends
@@ -6,9 +5,6 @@ from fastapi.security import OAuth2PasswordRequestForm
 
 from app.auth import create_access_token, verify_token, ACCESS_TOKEN_EXPIRE_MINUTES
 from ..models.observation import Observation
-
-logger = logging.getLogger(__name__)
-
 
 router = APIRouter()
 
