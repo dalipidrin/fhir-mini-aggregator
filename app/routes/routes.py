@@ -34,3 +34,42 @@ async def create_observation(observation: Observation):
     observations_db.append(observation)
 
     return {"message": "Observation stored successfully", "id": observation.id}
+
+
+@router.get("/patients/{patient_id}/metrics")
+def get_patient_metrics(patient_id: str):
+    # filter observations belonging to this patient
+    patient_observations = [
+        obs for obs in observations_db
+        if obs.subject.reference == f"Patient/{patient_id}"
+    ]
+
+    if not patient_observations:
+        raise HTTPException(status_code=404, detail="No observations found for this patient")
+
+    # observation count
+    observation_count = len(patient_observations)
+
+    # latest observation (by effectiveDateTime)
+    latest_obs = max(patient_observations, key=lambda o: o.effectiveDateTime)
+
+    # calculate average value grouped by LOINC code
+    sums_by_code = {}
+    counts_by_code = {}
+
+    for obs in patient_observations:
+        code = obs.code.coding[0].code  # Get LOINC code
+        value = obs.valueQuantity.value
+        sums_by_code[code] = sums_by_code.get(code, 0) + value
+        counts_by_code[code] = counts_by_code.get(code, 0) + 1
+
+    average_by_code = {
+        code: sums_by_code[code] / counts_by_code[code] for code in sums_by_code
+    }
+
+    return {
+        "patientId": patient_id,
+        "observationCount": observation_count,
+        "latest": latest_obs.dict(),
+        "averageByCode": average_by_code
+    }
