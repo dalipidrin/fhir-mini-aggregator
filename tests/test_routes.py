@@ -1,6 +1,6 @@
 from fastapi.testclient import TestClient
 
-from app.main import app  # adjust if your FastAPI app is elsewhere
+from app.main import app
 from app.models.observation import Observation
 from app.routes.routes import observations_db
 
