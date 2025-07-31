@@ -1,7 +1,10 @@
 import logging
+from datetime import timedelta
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
+from fastapi.security import OAuth2PasswordRequestForm
 
+from app.auth import create_access_token, verify_token, ACCESS_TOKEN_EXPIRE_MINUTES
 from ..models.observation import Observation
 
 logger = logging.getLogger(__name__)
@@ -13,8 +16,17 @@ router = APIRouter()
 observations_db = []
 
 
+@router.post("/auth")
+def login(form_data: OAuth2PasswordRequestForm = Depends()):
+    if form_data.username != "user" or form_data.password != "pass":
+        raise HTTPException(status_code=400, detail="Incorrect username or password")
+
+    token = create_access_token({"sub": form_data.username}, timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
+    return {"access_token": token, "token_type": "bearer"}
+
+
 @router.post("/observations")
-async def create_observation(observation: Observation):
+async def create_observation(observation: Observation, username: str = Depends(verify_token)):
     # validate the observation fields
     if observation.resourceType != "Observation":
         raise HTTPException(status_code=400, detail="resourceType must be 'Observation'")
@@ -37,7 +49,7 @@ async def create_observation(observation: Observation):
 
 
 @router.get("/patients/{patient_id}/metrics")
-def get_patient_metrics(patient_id: str):
+def get_patient_metrics(patient_id: str, username: str = Depends(verify_token)):
     # filter observations belonging to this patient
     patient_observations = [
         obs for obs in observations_db
