@@ -8,6 +8,12 @@ client = TestClient(app)
 
 
 class TestFHIRAggregator:
+    """
+    Unit tests for the FHIR Mini Aggregator API.
+
+    This test suite uses FastAPI's TestClient to simulate API calls for authentication, creating observations, and retrieving patient
+    metrics. It verifies both successful flows and error handling.
+    """
 
     def setup_method(self, method):
         # runs before each test method

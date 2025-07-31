@@ -8,6 +8,10 @@ from .value_quantity import ValueQuantity
 
 
 class Observation(BaseModel):
+    """
+    A model class representing an Observation resource.
+    """
+
     resourceType: str
     id: str
     status: str
