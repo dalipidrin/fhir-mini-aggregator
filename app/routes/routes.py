@@ -1,7 +1,8 @@
 from fastapi import APIRouter, HTTPException, Depends
 from fastapi.security import OAuth2PasswordRequestForm
 
-from app.services.auth import AuthService
+from app.services.authentication_service import AuthenticationService
+from app.services.observation_service import ObservationService
 from ..models.observation import Observation
 
 router = APIRouter()
@@ -25,23 +26,17 @@ def login(form_data: OAuth2PasswordRequestForm = Depends()):
     if form_data.username != "user" or form_data.password != "pass":
         raise HTTPException(status_code=400, detail="Incorrect username or password")
 
-    token = AuthService.create_access_token({"sub": form_data.username})
+    token = AuthenticationService.create_access_token({"sub": form_data.username})
     return {"access_token": token, "token_type": "bearer"}
 
 
 @router.post("/observations")
-async def create_observation(observation: Observation, _: None = Depends(AuthService.verify_token)):
+async def create_observation(observation: Observation, _: None = Depends(AuthenticationService.verify_token)):
     """
     Create and store an Observation resource.
 
     This endpoint accepts an Observation object and performs validation on key fields. It requires authentication via a bearer token, which
     is verified by the `verify_token` dependency.
-
-    Validations:
-    - `resourceType` must be "Observation".
-    - `subject.reference` must start with "Patient/".
-    - `code.coding` list must not be empty and must include a `code`.
-    - `valueQuantity.value` must be present.
 
     If validation passes, the observation is stored in memory.
 
@@ -51,29 +46,14 @@ async def create_observation(observation: Observation, _: None = Depends(AuthSer
     :return: A success message and the ID of the stored Observation
     """
 
-    # validate the observation fields
-    if observation.resourceType != "Observation":
-        raise HTTPException(status_code=400, detail="resourceType must be 'Observation'")
-
-    if not observation.subject or not observation.subject.reference.startswith("Patient/"):
-        raise HTTPException(status_code=400, detail="subject.reference must start with 'Patient/'")
-
-    if not observation.code or not observation.code.coding:
-        raise HTTPException(status_code=400, detail="code.coding must not be empty")
-
-    if not observation.code.coding[0].code:
-        raise HTTPException(status_code=400, detail="code.coding[0].code is required")
-
-    if not observation.valueQuantity or observation.valueQuantity.value is None:
-        raise HTTPException(status_code=400, detail="valueQuantity.value is required")
-
+    ObservationService.validate_observation(observation)
     observations_db.append(observation)
 
     return {"message": "Observation stored successfully", "id": observation.id}
 
 
 @router.get("/patients/{patient_id}/metrics")
-def get_patient_metrics(patient_id: str, _: None = Depends(AuthService.verify_token)):
+def get_patient_metrics(patient_id: str, _: None = Depends(AuthenticationService.verify_token)):
     """
     Retrieve summary metrics for a patient's observations.
 

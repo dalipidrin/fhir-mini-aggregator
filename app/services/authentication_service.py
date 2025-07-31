@@ -5,7 +5,7 @@ import jwt
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
 
-class AuthService:
+class AuthenticationService:
     """
     Service class responsible for handling JSON Web Token (JWT) authentication.
 
@@ -30,9 +30,9 @@ class AuthService:
         """
 
         to_encode = data.copy()
-        expire = datetime.utcnow() + (expires_delta or timedelta(minutes=AuthService.ACCESS_TOKEN_EXPIRE_MINUTES))
+        expire = datetime.utcnow() + (expires_delta or timedelta(minutes=AuthenticationService.ACCESS_TOKEN_EXPIRE_MINUTES))
         to_encode.update({"exp": expire})
-        return jwt.encode(to_encode, AuthService.SECRET_KEY, algorithm=AuthService.ALGORITHM)
+        return jwt.encode(to_encode, AuthenticationService.SECRET_KEY, algorithm=AuthenticationService.ALGORITHM)
 
     @staticmethod
     def verify_token(credentials: HTTPAuthorizationCredentials = Depends(HTTPBearer())):
@@ -47,7 +47,7 @@ class AuthService:
         """
         token = credentials.credentials
         try:
-            payload = jwt.decode(token, AuthService.SECRET_KEY, algorithms=[AuthService.ALGORITHM])
+            payload = jwt.decode(token, AuthenticationService.SECRET_KEY, algorithms=[AuthenticationService.ALGORITHM])
             if payload.get("sub") is None:
                 raise HTTPException(status_code=401, detail="Invalid token payload")
         except jwt.PyJWTError:
