@@ -109,6 +109,14 @@ Response:
 }
 ```
 
+## Docker
+
+To spin up the API quickly using Docker Compose, run:
+
+```bash
+docker-compose up --build
+```
+
 ## Reasoning
 
 ### Security
