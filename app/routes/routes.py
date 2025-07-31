@@ -1,9 +1,7 @@
-from datetime import timedelta
-
 from fastapi import APIRouter, HTTPException, Depends
 from fastapi.security import OAuth2PasswordRequestForm
 
-from app.services.auth import create_access_token, verify_token, ACCESS_TOKEN_EXPIRE_MINUTES
+from app.services.auth import AuthService
 from ..models.observation import Observation
 
 router = APIRouter()
@@ -27,12 +25,12 @@ def login(form_data: OAuth2PasswordRequestForm = Depends()):
     if form_data.username != "user" or form_data.password != "pass":
         raise HTTPException(status_code=400, detail="Incorrect username or password")
 
-    token = create_access_token({"sub": form_data.username}, timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
+    token = AuthService.create_access_token({"sub": form_data.username})
     return {"access_token": token, "token_type": "bearer"}
 
 
 @router.post("/observations")
-async def create_observation(observation: Observation, _: None = Depends(verify_token)):
+async def create_observation(observation: Observation, _: None = Depends(AuthService.verify_token)):
     """
     Create and store an Observation resource.
 
@@ -75,7 +73,7 @@ async def create_observation(observation: Observation, _: None = Depends(verify_
 
 
 @router.get("/patients/{patient_id}/metrics")
-def get_patient_metrics(patient_id: str, _: None = Depends(verify_token)):
+def get_patient_metrics(patient_id: str, _: None = Depends(AuthService.verify_token)):
     """
     Retrieve summary metrics for a patient's observations.
 
