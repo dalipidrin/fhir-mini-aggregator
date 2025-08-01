@@ -3,6 +3,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 
 from app.services.authentication_service import AuthenticationService
 from app.services.observation_service import ObservationService
+from app.services.patient_service import PatientService
 from ..models.observation import Observation
 
 router = APIRouter()
@@ -76,34 +77,17 @@ def get_patient_metrics(patient_id: str, _: None = Depends(AuthenticationService
         - averageByCode (dict): Mapping of observation code to average value.
     """
 
-    # filter observations belonging to this patient
-    patient_observations = [
-        obs for obs in observations_db
-        if obs.subject.reference == f"Patient/{patient_id}"
-    ]
+    # filter observations belonging to this patient based on patient id
+    patient_observations = PatientService.get_observations_for_patient(patient_id, observations_db)
 
-    if not patient_observations:
-        raise HTTPException(status_code=404, detail="No observations found for this patient")
-
-    # observation count
+    # calculate the number of observations for the patient
     observation_count = len(patient_observations)
 
     # latest observation (by effectiveDateTime)
     latest_obs = max(patient_observations, key=lambda o: o.effectiveDateTime)
 
-    # calculate average value grouped by LOINC code
-    sums_by_code = {}
-    counts_by_code = {}
-
-    for obs in patient_observations:
-        code = obs.code.coding[0].code  # Get LOINC code
-        value = obs.valueQuantity.value
-        sums_by_code[code] = sums_by_code.get(code, 0) + value
-        counts_by_code[code] = counts_by_code.get(code, 0) + 1
-
-    average_by_code = {
-        code: sums_by_code[code] / counts_by_code[code] for code in sums_by_code
-    }
+    # calculate the average value of observations grouped by their observation code
+    average_by_code = PatientService.calculate_average_by_code(patient_observations)
 
     return {
         "patientId": patient_id,
