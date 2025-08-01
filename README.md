@@ -43,23 +43,27 @@ Request:
 curl -X POST "http://127.0.0.1:8000/observations" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer <jwt_token>" \
-  -d '{
-        "resourceType": "Observation",
-        "id": "obs1",
-        "status": "final",
-        "code": {
-          "coding": [
-            {
-              "system": "http://loinc.org",
-              "code": "8462-4",
-              "display": "Diastolic blood pressure"
-            }
-          ]
+  -d '[
+        {
+          "resourceType": "Patient",
+          "id": "123",
+          "name": [{"family": "Hardy", "given": ["Peter"]}],
+          "birthDate": "1990-04-05"
         },
-        "subject": {"reference": "Patient/123"},
-        "effectiveDateTime": "2025-01-10T10:00:00+02:00",
-        "valueQuantity": {"value": 75, "unit": "mmHg"}
-      }'
+        {
+          "resourceType": "Observation",
+          "id": "obs2",
+          "status": "final",
+          "code": {
+            "coding": [
+              {"system": "http://loinc.org", "code": "8462-4", "display": "Diastolic blood pressure"}
+            ]
+          },
+          "subject": {"reference": "Patient/123"},
+          "effectiveDateTime": "2025-01-10T10:00:00+02:00",
+          "valueQuantity": {"value": 100, "unit": "mmHg"}
+        }
+      ]'
 ```
 Response:
 ```bash
