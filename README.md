@@ -132,5 +132,5 @@ Validates key FHIR Observation fields to keep logic clear and simple, focusing o
 ### In-memory storage
 Uses an in-memory list (`observations_db`) for simplicity.
 
-### Extensible foundation
-Built with FastAPI and Pydantic for strong typing, validation, and rapid API development.
+### Fast, flexible foundation
+Built with FastAPI for rapid API development and future scalability.
