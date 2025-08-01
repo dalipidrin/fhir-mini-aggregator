@@ -17,7 +17,7 @@ class AuthenticationService:
     ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
     @staticmethod
-    def create_access_token(data: dict, expires_delta: timedelta | None = None):
+    def create_access_token(data: dict, expires_delta: timedelta | None = None) -> str:
         """
         Creates a JSON Web Token (JWT) access token.
 
