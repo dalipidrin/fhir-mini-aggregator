@@ -68,29 +68,36 @@ class TestFHIRAggregator:
     def test_create_observation_that_ok(self):
         # given
         token = self.get_auth_token()
-        self.add_test_observation()
-        payload = {
-            "resourceType": "Observation",
-            "id": "obs2",
-            "status": "final",
-            "code": {
-                "coding": [
-                    {
-                        "system": "http://loinc.org",
-                        "code": "8462-4",
-                        "display": "Diastolic blood pressure"
-                    }
-                ]
+        payload = [
+            {
+                "resourceType": "Patient",
+                "id": "123",
+                "name": [{"family": "Hardy", "given": ["Peter"]}],
+                "birthDate": "1990-04-05"
             },
-            "subject": {
-                "reference": "Patient/123"
-            },
-            "effectiveDateTime": "2025-01-10T11:00:00+02:00",
-            "valueQuantity": {
-                "value": 80,
-                "unit": "mmHg"
+            {
+                "resourceType": "Observation",
+                "id": "obs2",
+                "status": "final",
+                "code": {
+                    "coding": [
+                        {
+                            "system": "http://loinc.org",
+                            "code": "8462-4",
+                            "display": "Diastolic blood pressure"
+                        }
+                    ]
+                },
+                "subject": {
+                    "reference": "Patient/123"
+                },
+                "effectiveDateTime": "2025-01-10T11:00:00+02:00",
+                "valueQuantity": {
+                    "value": 80,
+                    "unit": "mmHg"
+                }
             }
-        }
+        ]
 
         # when
         response = client.post(
@@ -104,28 +111,36 @@ class TestFHIRAggregator:
 
     def test_create_observation_with_invalid_bearer_token_that_401(self):
         # given
-        payload = {
-            "resourceType": "Observation",
-            "id": "obs3",
-            "status": "final",
-            "code": {
-                "coding": [
-                    {
-                        "system": "http://loinc.org",
-                        "code": "8462-4",
-                        "display": "Diastolic blood pressure"
-                    }
-                ]
+        payload = [
+            {
+                "resourceType": "Patient",
+                "id": "123",
+                "name": [{"family": "Hardy", "given": ["Peter"]}],
+                "birthDate": "1990-04-05"
             },
-            "subject": {
-                "reference": "Patient/123"
-            },
-            "effectiveDateTime": "2025-01-10T11:00:00+02:00",
-            "valueQuantity": {
-                "value": 80,
-                "unit": "mmHg"
+            {
+                "resourceType": "Observation",
+                "id": "obs2",
+                "status": "final",
+                "code": {
+                    "coding": [
+                        {
+                            "system": "http://loinc.org",
+                            "code": "8462-4",
+                            "display": "Diastolic blood pressure"
+                        }
+                    ]
+                },
+                "subject": {
+                    "reference": "Patient/123"
+                },
+                "effectiveDateTime": "2025-01-10T11:00:00+02:00",
+                "valueQuantity": {
+                    "value": 80,
+                    "unit": "mmHg"
+                }
             }
-        }
+        ]
 
         # when
         response = client.post(
@@ -159,7 +174,6 @@ class TestFHIRAggregator:
 
     def test_get_patient_metrics_with_invalid_bearer_token_that_401(self):
         # given
-        token = self.get_auth_token()
         self.add_test_observation()
 
         # when

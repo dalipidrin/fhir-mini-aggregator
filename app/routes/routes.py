@@ -32,7 +32,7 @@ def login(form_data: OAuth2PasswordRequestForm = Depends()):
 
 
 @router.post("/observations")
-async def create_observation(observation: Observation, _: None = Depends(AuthenticationService.verify_token)):
+async def create_observation(items: list[dict], _: None = Depends(AuthenticationService.verify_token)):
     """
     Create and store an Observation resource.
 
@@ -41,16 +41,19 @@ async def create_observation(observation: Observation, _: None = Depends(Authent
 
     If validation passes, the observation is stored in memory.
 
-    :param observation: The Observation resource to store.
+    :param items: The list of items containing Observation that needs to be stored.
     :param _: Parameter is used only to trigger token verification via dependency injection.
     :raise HTTPException: If any required fields are missing or invalid.
     :return: A success message and the ID of the stored Observation
     """
+    for item in items:
+        if item.get("resourceType") == "Observation":
+            obs = Observation(**item)
+            ObservationService.validate_observation(obs)
+            observations_db.append(obs)
+            return {"message": "Observation stored successfully", "id": obs.id}
 
-    ObservationService.validate_observation(observation)
-    observations_db.append(observation)
-
-    return {"message": "Observation stored successfully", "id": observation.id}
+    raise HTTPException(status_code=400, detail="No valid Observation resource found in payload")
 
 
 @router.get("/patients/{patient_id}/metrics")
